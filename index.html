@@ -3,78 +3,84 @@
 
 <head>
 
-    <title>Advanced Weather App</title>
+    <title>Advanced Todo App</title>
 
     <style>
 
         body{
             font-family: Arial;
-            background: linear-gradient(to right, #4facfe, #00f2fe);
+            background: linear-gradient(to right, #74ebd5, #ACB6E5);
             text-align: center;
             margin: 0;
             padding: 0;
         }
 
-        .container{
-            width: 380px;
+        .box{
+            width: 420px;
+            background-color: rgb(246, 237, 237);
             margin: auto;
-            margin-top: 80px;
-            background: rgb(221, 193, 193);
+            margin-top: 50px;
             padding: 25px;
             border-radius: 15px;
-            box-shadow: 0px 5px 15px gray;
+            box-shadow: 0px 5px 15px rgb(87, 83, 83);
         }
 
-        h1{
-            color: rgb(39, 39, 178);
+        h2{
+            color: rgb(79, 79, 174);
         }
 
-        input{
-            width: 85%;
+        input, select, textarea{
+            width: 90%;
             padding: 12px;
+            margin-top: 10px;
             border-radius: 5px;
             border: 1px solid gray;
-            font-size: 16px;
+            font-size: 15px;
         }
 
         button{
             padding: 10px 18px;
-            background-color: rgb(55, 55, 224);
-            color: white;
             border: none;
             border-radius: 5px;
+            margin-top: 10px;
             cursor: pointer;
-            margin-top: 15px;
             font-size: 15px;
         }
 
-        button:hover{
-            background-color: darkblue;
+        .addbtn{
+            background-color: green;
+            color: white;
         }
 
-        #result{
-            margin-top: 20px;
+        .deletebtn{
+            background-color: rgb(142, 53, 53);
+            color: white;
+            margin-top: 5px;
+        }
+
+        .task{
+            background-color: #f1f8ff;
+            margin-top: 15px;
             padding: 15px;
-            background-color: #f0f8ff;
             border-radius: 10px;
-            font-size: 18px;
-            color: #333;
-        }
-
-        .history{
-            margin-top: 20px;
+            box-shadow: 0px 2px 5px lightgray;
             text-align: left;
         }
 
-        .history h3{
-            color: darkgreen;
+        .task h3{
+            margin: 5px;
+            color: rgb(37, 37, 170);
         }
 
-        .city-item{
-            background-color: lightgray;
-            padding: 8px;
-            margin-top: 5px;
-            border-radius: 5px;
+        .task p{
+            margin: 5px;
+            color: #444;
+        }
+
+        .count{
+            margin-top: 15px;
+            font-weight: bold;
+            color: darkgreen;
         }
 
     </style>
@@ -83,130 +89,129 @@
 
 <body>
 
-    <div class="container">
+    <div class="box">
 
-        <h1>🌦 Weather App</h1>
+        <h2>📝 Advanced Todo List App</h2>
 
-        <input type="text"
-               id="city"
-               placeholder="Enter City Name">
+        <!-- TASK NAME -->
+        <input type="text" id="task" placeholder="Enter Task">
 
-        <br>
+        <!-- DESCRIPTION -->
+        <textarea id="desc" placeholder="Enter Description"></textarea>
 
-        <button onclick="getWeather()">
-            Get Weather
-        </button>
+        <!-- TIME -->
+        <input type="time" id="time">
+
+        <!-- CATEGORY -->
+        <select id="category">
+
+            <option value="Study">Study</option>
+            <option value="Work">Work</option>
+            <option value="Personal">Personal</option>
+
+        </select>
+
+        <button class="addbtn" onclick="addTask()">Add Task</button>
+
+        <br><br>
+
+        <select onchange="filterTasks()" id="filter">
+
+            <option value="All">Show All</option>
+            <option value="Study">Study</option>
+            <option value="Work">Work</option>
+            <option value="Personal">Personal</option>
+
+        </select>
+
+        <div class="count" id="count"></div>
 
         <div id="result"></div>
-
-        <div class="history">
-
-            <h3>Recent Searches</h3>
-
-            <div id="history"></div>
-
-        </div>
 
     </div>
 
     <script>
 
-        // Load search history from local storage
-        let history =
-        JSON.parse(localStorage.getItem("cities")) || [];
+        let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
 
-        showHistory();
+        showTasks(tasks);
 
-        // Async API Integration
-        async function getWeather(){
+        function addTask(){
 
-            let city =
-            document.getElementById("city").value;
+            let taskname = document.getElementById("task").value;
+            let desc = document.getElementById("desc").value;
+            let time = document.getElementById("time").value;
+            let category = document.getElementById("category").value;
 
-            if(city == ""){
-
-                alert("Please Enter City Name");
-
+            if(taskname === ""){
+                alert("Please Enter Task");
                 return;
-
             }
 
-            let url =
-            `https://wttr.in/${city}?format=j1`;
+            let obj = {
+                task: taskname,
+                desc: desc,
+                time: time,
+                type: category
+            };
 
-            try{
+            tasks.push(obj);
 
-                let response =
-                await fetch(url);
+            localStorage.setItem("tasks", JSON.stringify(tasks));
 
-                let data =
-                await response.json();
+            showTasks(tasks);
 
-                let temp =
-                data.current_condition[0].temp_C;
-
-                let weather =
-                data.current_condition[0].weatherDesc[0].value;
-
-                let humidity =
-                data.current_condition[0].humidity;
-
-                // Display Weather Data
-                document.getElementById("result").innerHTML =
-
-                "<h2>" + city + "</h2>" +
-
-                "🌡 Temperature : "
-                + temp + " °C"
-                + "<br><br>" +
-
-                "☁ Weather : "
-                + weather
-                + "<br><br>" +
-
-                "💧 Humidity : "
-                + humidity + "%";
-
-                // Store city in local storage
-                history.push(city);
-
-                localStorage.setItem(
-                    "cities",
-                    JSON.stringify(history)
-                );
-
-                showHistory();
-
-            }
-
-            catch(error){
-
-                document.getElementById("result").innerHTML =
-
-                "❌ Error Loading Weather Data";
-
-            }
-
+            // clear fields
+            document.getElementById("task").value = "";
+            document.getElementById("desc").value = "";
+            document.getElementById("time").value = "";
         }
 
-        // Show Search History
-        function showHistory(){
+        function showTasks(data){
 
             let output = "";
 
-            for(let i=0; i<history.length; i++){
+            for(let i = 0; i < data.length; i++){
 
-                output = output +
+                output += `
+                    <div class="task">
+                        <h3>${data[i].task}</h3>
+                        <p><b>Description:</b> ${data[i].desc || "No description"}</p>
+                        <p><b>Time:</b> ${data[i].time || "Not set"}</p>
+                        <p><b>Category:</b> ${data[i].type}</p>
 
-                "<div class='city-item'>"
-                + history[i] +
-                "</div>";
-
+                        <button class="deletebtn" onclick="deleteTask(${i})">
+                            Delete
+                        </button>
+                    </div>
+                `;
             }
 
-            document.getElementById("history").innerHTML =
-            output;
+            document.getElementById("result").innerHTML = output;
+            document.getElementById("count").innerHTML =
+                "Total Tasks : " + data.length;
+        }
 
+        function deleteTask(index){
+
+            tasks.splice(index, 1);
+
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+
+            showTasks(tasks);
+        }
+
+        function filterTasks(){
+
+            let value = document.getElementById("filter").value;
+
+            if(value === "All"){
+                showTasks(tasks);
+            }
+            else{
+                let filtered = tasks.filter(item => item.type === value);
+                showTasks(filtered);
+            }
         }
 
     </script>
